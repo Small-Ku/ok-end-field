@@ -11,6 +11,9 @@ class BaseEfTask(BaseTask):
     def in_bg(self):
         return not self.hwnd.is_foreground()
 
+    def find_confirm(self):
+        return self.wait_feature('skip_dialog_confirm', horizontal_variance=0.05, vertical_variance=0.05, settle_time=0.1)
+
     def wait_login(self):
         if not self._logged_in:
             # if self.find_one('login_account', vertical_variance=0.1, threshold=0.7):
