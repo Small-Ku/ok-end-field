@@ -31,7 +31,7 @@ class AutoCombatTask(BaseEfTask, TriggerTask):
     def run(self):
         # self.log_debug('AutoCombatTask.run()')
         bar_count = self.get_skill_bar_count()
-        if self.get_skill_bar_count() < 0 or not self.in_team():
+        if self.get_skill_bar_count() < 1 or not self.in_team():
             return
         self.log_info('enter combat {}'.format(bar_count))
         raw_skill_config = self.config.get("技能释放", "")
