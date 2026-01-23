@@ -46,9 +46,9 @@ class EfInteraction(PostMessageInteraction):
             btn_up = win32con.WM_RBUTTONUP
         self.post(btn_down, btn_mk, click_pos
                   )
+        time.sleep(down_time)
         self.post(btn_up, 0, click_pos
                   )
-        time.sleep(down_time)
         if x >= 0:
             SetCursorPos(self.cursor_position)
 
