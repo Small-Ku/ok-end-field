@@ -47,7 +47,7 @@ class AutoCombatTask(BaseEfTask, TriggerTask):
                 self.log_info("自动战斗结束!", notify=self.config.get("后台结束战斗通知") and self.in_bg())
                 if self.debug:
                     self.screenshot('out_of_combat')
-                if self.wait_in_combat(click=True):
+                if self.wait_in_combat(click=True, time_out=1):
                     self.log_debug('re-enter combat')
                     self.click(key='middle')
                     continue
