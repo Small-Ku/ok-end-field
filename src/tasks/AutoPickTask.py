@@ -21,8 +21,11 @@ class AutoPickTask(BaseEfTask, TriggerTask):
         self.last_box_name = None
         self.last_pick_time = 0
         self.white_list = {'采集', '萤壳虫', '打开', '荞花', '灰芦麦', '灼壳虫', '苦叶椒', "轻红柱状菌", "酮化灌木",
-                           '柑实', "触碰", '激活'
+                           '柑实', "触碰", '激活', '芽针'
                            }
+        self.black_list = {
+            '协议核心',
+        }
 
     def run(self):
         if self.in_world():
@@ -34,7 +37,10 @@ class AutoPickTask(BaseEfTask, TriggerTask):
                     self.log_error('pick can not ocr texts')
                     return
 
-                if any(white_text in texts[0].name for white_text in self.white_list):
+                if any(text in texts[0].name for text in self.black_list):
+                    return
+
+                if any(text in texts[0].name for text in self.white_list):
                     if self.debug:
                         self.screenshot('pick')
                     self.log_debug('pick white_list {}'.format(texts[0].name))
