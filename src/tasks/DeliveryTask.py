@@ -2,6 +2,8 @@ import ctypes
 import re
 import time
 
+from src.interaction.Mouse import active_and_send_mouse_delta
+
 user32 = ctypes.windll.user32
 
 
@@ -139,7 +141,7 @@ class DeliveryTask(BaseEfTask):
         delivery_box = self.wait_ocr(match="运送委托列表", time_out=5)
         if delivery_box:
             self.click(delivery_box[0], move_back=True, after_sleep=0.5)
-            self.active_and_send_mouse_delta(self.hwnd.hwnd, only_activate=True)
+            active_and_send_mouse_delta(self.hwnd.hwnd, only_activate=True)
         cx = int(self.width * 0.5)
         cy = int(self.height * 0.5)
         for _ in range(6):
@@ -269,6 +271,7 @@ class DeliveryTask(BaseEfTask):
                 self.align_ocr_or_find_target_to_center(
                     "secondary_objective_direction_dot",
                     threshold=0.7,
+                    only_x=True,
                     ocr=False,
                 )
                 self.move_keys(
@@ -293,6 +296,7 @@ class DeliveryTask(BaseEfTask):
             "secondary_objective_direction_dot",
             threshold=0.6,
             ocr=False,
+            only_x=True,
             raise_if_fail=False,
         )
         self.click(key="right")
@@ -302,6 +306,7 @@ class DeliveryTask(BaseEfTask):
             self.align_ocr_or_find_target_to_center(
                 "secondary_objective_direction_dot",
                 threshold=0.6,
+                only_x=True,
                 ocr=False,
             )
             self.move_keys(
