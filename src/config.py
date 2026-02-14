@@ -117,6 +117,7 @@ config = {
         ["src.tasks.TakeDeliveryTask", "TakeDeliveryTask"],
         ["src.tasks.WarehouseTransferTask", "WarehouseTransferTask"],
         ["src.tasks.DeliveryTask", "DeliveryTask"],
+        ["src.tasks.Test", "Test"],
         # ["src.tasks.BuySellTask", "BuySellTask"],
         ["src.tasks.EssenceScanTask", "EssenceScanTask"],
         ["ok.task.DiagnosisTask", "DiagnosisTask"],

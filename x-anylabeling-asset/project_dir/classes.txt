@@ -3,6 +3,8 @@
 assist_friend
 b
 c
+can_exchange_info_icon
+can_help_icon
 chat_icon
 chat_icon_2
 chat_icon_dark
@@ -17,6 +19,7 @@ essence_quality_gold_2
 essence_quality_gold_3
 essence_ui_marker
 essence_unlocked
+friend_chat_icon
 logout
 monthly_card
 one_click_claim
@@ -50,3 +53,4 @@ ult_1
 ult_2
 ult_3
 ult_4
+visit_icon
