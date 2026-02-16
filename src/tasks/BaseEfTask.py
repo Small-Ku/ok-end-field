@@ -32,12 +32,49 @@ class BaseEfTask(BaseTask):
         return move_to_target_once(hwnd, ocr_obj, self.screen_center,max_step=max_step,min_step=min_step,slow_radius=slow_radius)
     def active_and_send_mouse_delta(self, hwnd, dx=1, dy=1, activate=True, only_activate=False, delay=0.02, steps=3):
         return active_and_send_mouse_delta(hwnd, dx, dy, activate, only_activate, delay, steps)
+
+    def isolate_white_yellow_text(frame):
+        """
+        提取 白色 + 黄白色 数字
+        输出：黑字白底（适合OCR）
+        """
+
+        # 转 HSV（游戏UI更稳）
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+        # ===== 白色范围 =====
+        lower_white = np.array([0, 0, 210], dtype=np.uint8)
+        upper_white = np.array([180, 40, 255], dtype=np.uint8)
+
+        # ===== 黄色 / 金色范围 =====
+        lower_gold1 = np.array([18, 80, 170])
+        upper_gold1 = np.array([40, 255, 255])
+        
+        lower_gold = np.array([18, 120, 180], dtype=np.uint8)
+        upper_gold = np.array([35, 255, 255], dtype=np.uint8)
+        
+        mask_gold1 = cv2.inRange(hsv, lower_gold1, upper_gold1)
+        mask_white = cv2.inRange(hsv, lower_white, upper_white)
+        mask_gold = cv2.inRange(hsv, lower_gold, upper_gold)
+
+        # 合并
+        mask = cv2.bitwise_or(mask_white, mask_gold, mask_gold1)
+
+        # 形态学闭运算（防止数字断裂）
+        kernel = np.ones((2, 2), np.uint8)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+
+        # OCR 通常喜欢 黑字白底
+        output = cv2.bitwise_not(mask)
+
+        return cv2.cvtColor(output, cv2.COLOR_GRAY2BGR)
+
     def click_with_alt(self, x: float | Box | List[Box] = -1, y: float = -1, move_back: bool = False, name: str | None = None, interval: int = -1, move: bool = True, down_time: float = 0.01, after_sleep: float = 0, key: str = 'left'):
         self.send_key_down("alt")
         self.sleep(0.5)
         self.click(x=x,y=y,move_back=move_back,name=name,interval=interval,move=move,down_time=down_time,after_sleep=after_sleep,key=key)
         self.send_key_up("alt")
-    
+
     def scroll(self, x:int, y:int, count:int)->None:
         run_at_window_pos(self.hwnd.hwnd,super().scroll,x,y,0.5,x,y,count)
 
@@ -145,7 +182,7 @@ class BaseEfTask(BaseTask):
         only_y=False,
         box=None,
         threshold=0.8,
-        max_time=100,
+        max_time=50,
         ocr=True,
         raise_if_fail=True,
         is_num=False,
@@ -154,6 +191,7 @@ class BaseEfTask(BaseTask):
         min_step=20,
         slow_radius=200,
         tolerance=TOLERANCE,
+        ocr_frame_processor=isolate_white_yellow_text
     ):
         """
         Aligns a target detected by OCR or image feature to the center of the screen.
@@ -193,23 +231,41 @@ class BaseEfTask(BaseTask):
         for i in range(max_time):
             if ocr:
                 # 使用OCR模式识别目标，设置超时时间为2秒，并启用日志记录
-                result = self.wait_ocr(
-                    match=ocr_match_or_feature_name_list, box=box, time_out=2, log=True
-                )
-            else:
-                self.sleep(2)
-                # 使用图像特征识别模式查找目标
-                if isinstance(ocr_match_or_feature_name_list, str):
-                    ocr_match_or_feature_name_list = [ocr_match_or_feature_name_list]
+                start_time = time.time()
                 result=None
-                for feature_name in ocr_match_or_feature_name_list:
-                    result = self.find_feature(
-                        feature_name=feature_name,
-                        threshold=threshold,
-                        box=feature_box,
+                while time.time() - start_time < 2:
+                    frame = self.next_frame()
+                    result = self.ocr(
+                        match=ocr_match_or_feature_name_list,
+                        box=box,
+                        frame=frame,
+                        log=True,
+                        frame_processor=ocr_frame_processor,
                     )
                     if result:
                         break
+                    time.sleep(0.1)
+            else:
+                if isinstance(ocr_match_or_feature_name_list, str):
+                    ocr_match_or_feature_name_list = [ocr_match_or_feature_name_list]
+                start_time = time.time()
+                result = None
+                while True:
+                    if time.time() - start_time >= 2:
+                        break
+                    for feature_name in ocr_match_or_feature_name_list:
+                        if time.time() - start_time >= 2:
+                            break
+                        result = self.find_feature(
+                            feature_name=feature_name,
+                            threshold=threshold,
+                            box=feature_box,
+                        )
+                        if result:
+                            break
+                    if result:
+                        break
+                    self.sleep(0.1)
             if result:
                 success = True
                 random_move_count = 0
@@ -398,6 +454,7 @@ class BaseEfTask(BaseTask):
         return in_world
 
     def is_main(self, esc=False):
+        self.next_frame()  # 确保拿到最新的截图
         if self.in_world():
             self._logged_in = True
             return True

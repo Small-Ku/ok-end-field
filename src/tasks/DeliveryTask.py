@@ -106,6 +106,7 @@ class DeliveryTask(BaseEfTask):
         mid_box = self.box_of_screen(area[2][0], area[2][1], area[2][2], area[2][3])
 
         # === OCR ===
+        self.next_frame()  # 确保拿到最新的截图
         left_items = self.ocr(box=left_box)
         right_items = self.ocr(box=right_box)
         mid_items = self.ocr(box=mid_box)
@@ -191,7 +192,7 @@ class DeliveryTask(BaseEfTask):
         return None
 
     def other_run(self):
-        self.ensure_main()
+        self.ensure_main(time_out=120)
         self.log_info("前置操作：按Y，点击‘仓储节点’，点击‘运送委托列表’")
         self.to_model_area("武陵", "仓储节点")
         delivery_box = self.wait_ocr(match="运送委托列表", time_out=5)
@@ -203,7 +204,7 @@ class DeliveryTask(BaseEfTask):
         for _ in range(6):
             self.scroll(cx, cy, -8)
             self.sleep(0.2)
-        self.sleep(7)
+        self.wait_ui_stable(refresh_interval=1)
         enable_wuling = True
         ticket_types = []
         if enable_wuling:
@@ -244,7 +245,7 @@ class DeliveryTask(BaseEfTask):
                         self.sleep(wait)
                     self.click(last_refresh_box, move_back=True)
                     self._last_refresh_ts = time.time()
-                    self.sleep(3.0)  # 等待刷新内容加载
+                    self.wait_ui_stable(refresh_interval=1) # 刷新后界面稳定的时间可能会比平常长一些，尤其是网络较慢的时候
                     break
                 else:
                     self.log_info("警告: 尚未定位到刷新按钮位置，无法刷新，重试...")
@@ -252,13 +253,16 @@ class DeliveryTask(BaseEfTask):
 
     def zip_line_list_go(self, zip_line_list):
         for zip_line in zip_line_list:
-            self.align_ocr_or_find_target_to_center(re.compile(str(zip_line)), is_num=True, need_scroll=True)
+            self.align_ocr_or_find_target_to_center(re.compile(str(zip_line)), is_num=True)
             self.log_info(f"成功将滑索调整到{zip_line}的中心")
             self.click(after_sleep=0.5)
+            result = None
             start = time.time()
-            while not self.ocr(match=on_zip_line_stop, box="bottom", log=True):
+            while not result: 
                 self.send_key("e")
-                self.sleep(0.5)
+                self.next_frame()
+                result = self.ocr(match=on_zip_line_stop, box="bottom", log=True)
+                self.sleep(0.1)
                 if time.time() - start > 60:
                     raise Exception("滑索超时，强制退出")
         self.sleep(1)
@@ -266,8 +270,10 @@ class DeliveryTask(BaseEfTask):
 
     def on_zip_line_start(self, delivery_to):
         start = time.time()
-        while not self.ocr(match=on_zip_line_stop, box="bottom", log=True):
-            self.sleep(2)
+        self.sleep(1)
+        self.next_frame()
+        while not self.ocr(match=on_zip_line_stop,frame=self.next_frame(), box="bottom", log=True):
+            self.sleep(0.1)
             if time.time() - start > 60:
                 raise Exception("滑索超时，强制退出")
         zip_line_list_str = self.config.get(delivery_to)
@@ -311,7 +317,7 @@ class DeliveryTask(BaseEfTask):
         return True
 
     def to_storage_point_and_back_zip_line(self, only_zip_line=False):
-        if self.wait_ocr(match="登上滑索架", box="bottom_right", time_out=30, log=True):
+        if self.wait_ocr(match="登上滑索架", box="bottom_right", time_out=60, log=True):
             if self.wait_ocr(match="工业", box="top_left", time_out=2, log=True):
                 self.send_key("tab", after_sleep=1)
             self.send_key("f", after_sleep=2)
@@ -327,7 +333,6 @@ class DeliveryTask(BaseEfTask):
                     threshold=0.7,
                     ocr=False,
                     max_time=40,
-                    need_scroll=True,
                     raise_if_fail=False
                 )
                 self.click(key="right")
@@ -339,7 +344,6 @@ class DeliveryTask(BaseEfTask):
                     threshold=0.7,
                     only_x=True,
                     ocr=False,
-                    need_scroll=True
                 )
                 self.move_keys(
                     "w",
@@ -364,7 +368,6 @@ class DeliveryTask(BaseEfTask):
                 threshold=0.6,
                 ocr=False,
                 raise_if_fail=False,
-                need_scroll=True
             )
             self.click(key="right")
         for i in range(40):
@@ -375,7 +378,6 @@ class DeliveryTask(BaseEfTask):
                 threshold=0.6,
                 only_x=True,
                 ocr=False,
-                need_scroll=True
             )
             self.move_keys(
                 "w",
@@ -408,8 +410,10 @@ class DeliveryTask(BaseEfTask):
                         self.other_run()
                         self.wait_click_ocr(match=re.compile("送达"), box="bottom_right", settle_time=4, time_out=10,
                                             after_sleep=10, log=True)
-                    self.task_to_transfer_point()
-                    self.to_storage_point_and_back_zip_line()
+                    if not self.task_to_transfer_point():
+                        return
+                    if not self.to_storage_point_and_back_zip_line():
+                        return
                     ends_list_pattern_dict = {re.compile(end): end for end in self.ends}
                     results = self.wait_ocr(
                         match=list(ends_list_pattern_dict.keys()), box="left", time_out=10, log=True
