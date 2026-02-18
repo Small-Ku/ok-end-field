@@ -1,0 +1,40 @@
+{
+  "version": "3.3.9",
+  "flags": {},
+  "shapes": [
+    {
+      "kie_linking": [],
+      "label": "7_31w_wuling_dark",
+      "score": null,
+      "points": [
+        [
+          1265.7340989399293,
+          576.0499116607773
+        ],
+        [
+          1329.8842756183747,
+          576.0499116607773
+        ],
+        [
+          1329.8842756183747,
+          638.4377208480565
+        ],
+        [
+          1265.7340989399293,
+          638.4377208480565
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rectangle",
+      "flags": {},
+      "attributes": {}
+    }
+  ],
+  "imagePath": "Windows Graphics Capture_1920x1080_1771385663700.2634_original.png",
+  "imageData": null,
+  "imageHeight": 1080,
+  "imageWidth": 1920,
+  "description": ""
+}
