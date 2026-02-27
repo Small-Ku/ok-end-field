@@ -3,7 +3,7 @@ description: 创建一个报告以帮助我们修复问题 / Create a report to 
 title: "[Bug]: "
 labels: ["bug"]
 assignees:
-  - ok-oldking
+  - AliceJump
 
 body:
   # --- 1. 引导信息 / Guide ---
