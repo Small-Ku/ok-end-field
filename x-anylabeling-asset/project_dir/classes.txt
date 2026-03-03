@@ -10,6 +10,13 @@ chat_icon_dark
 check_in_close
 claim_gift
 close
+clue_1_icon
+clue_2_icon
+clue_3_icon
+clue_4_icon
+clue_5_icon
+clue_6_icon
+clue_7_icon
 consumables_icon
 cultivation_materials_icon
 e
