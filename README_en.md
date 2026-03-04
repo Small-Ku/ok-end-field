@@ -59,6 +59,160 @@ According to the official fair-operation statement for End Field:
 <img width="1200" height="2805" src="https://github.com/user-attachments/assets/505044a5-7e9a-449f-98a1-de7502b4a1d9" />
 <img width="1200" height="2505" src="https://github.com/user-attachments/assets/543d375a-e8d3-4c09-a310-800b872f42fa" />
 
+### 🥬 Daily Task Bundle
+One-click daily workflow with modular switches and independent config.
+
+- Gift giving (with max retry count)
+- Outpost exchange
+- Delivery handover
+- Delivery reward claim
+- Weapon crafting
+- Daily reward claim
+- Credit collection
+- Friend support strategy (optionally prioritize cultivation room)
+
+---
+
+### 🚚 Auto Delivery
+Auto accept-and-deliver pipeline for Wuling 73.1k commissions.
+
+- Auto recognizes zipline paths and sends goods to targets
+- Supports accept-only / deliver-only modes
+- Optional zoom via scroll for better alignment success
+- Built-in branch test and full-cycle test
+- Customizable route config
+- Tutorial video included
+
+---
+
+### 🧾 Delivery Commission Pickup
+Auto scans and picks high-value dispatch commissions.
+
+- Separate toggles for Valley ticket / Wuling ticket
+- Configurable min/max reward range
+- Simultaneous ticket-type + reward recognition
+- Auto refresh when conditions are not met
+
+---
+
+### 📦 Warehouse Transfer
+Cross-warehouse batch transfer for selected items.
+
+- Take items from source warehouse
+- Switch to target warehouse and one-click store
+- Supports safety reserve strategy (config-ready)
+- Dropdown selection for warehouse and item
+- OCR + template-based recognition
+
+---
+
+### 🔍 Graduation Essence Scanner
+Traverses weapon essence grid, matches graduation affixes, and locks automatically.
+
+- Auto lock qualified essence
+- Optional unlock for non-qualified essence
+- Data-driven matching via `assets/weapon_data.csv`
+- Grid traversal + page scrolling scan
+
+---
+
+### 🛒 Auto Pickup
+World interaction auto-pick task.
+
+- Detects interactable targets and picks automatically
+- Built-in whitelist (gatherables/insects/plants, etc.)
+- Blacklist filter to avoid mis-operations
+- Supports background mode
+
+---
+
+### ⚔ Auto Combat
+Automatically runs combat skill loop until battle ends.
+
+- Custom skill sequence (e.g., `123`)
+- Trigger threshold for skill points
+- Full-skill cycle release logic
+- Optional background battle-end notification
+- Auto combat-state recognition
+
+---
+
+### 🔐 Auto Login
+Auto detects logged-out state and performs login flow.
+
+- Periodic trigger check
+- Automatic login handling
+- Supports monthly-card claim scenarios
+
+---
+
+### ⏭ Auto Skip Dialog
+Auto detects dialog/cutscene UI and skips.
+
+- Detects skip button
+- Sends `ESC`
+- Clicks confirm automatically
+- Repeats until dialog is fully closed
+
+---
+
+### 🗓 Task Scheduler (Windows Task Scheduler)
+Create and manage timed tasks directly in UI, no manual `schtasks` command needed.
+
+- Supports daily / weekly / monthly triggers
+- Supports timeout and auto-exit settings
+- Supports task sync, enable, disable, delete
+- Auto-generates launch args (e.g., `-t N -e`)
+- Uses local cache to reduce repeated system reads
+
+---
+
+## 📋 Capability Overview (by task type)
+
+### One-time tasks (manual click to run)
+
+- Daily Task
+- Delivery Commission Pickup
+- Auto Delivery
+- Warehouse Transfer
+- Graduation Essence Scanner
+
+### Trigger tasks (background loop)
+
+- Auto Combat
+- Auto Pickup
+- Auto Login
+- Auto Skip Dialog
+
+### Recognition & interaction stack
+
+- OCR: `onnxocr` (OpenVINO optional)
+- Visual matching: COCO template matching
+- Color detection: HSV range isolation + feature detection
+- Input method: keyboard/mouse simulation (no memory injection)
+
+---
+
+## ⚙️ Runtime Requirements & Recommendations
+
+- OS: Windows
+- Game resolution: 16:9 recommended, minimum 1280×720
+- Language: some features currently support Simplified Chinese only
+- Privilege: run as Administrator recommended (required for source mode)
+- Path: prefer pure-English install/runtime path
+
+---
+
+## 🗂️ Project Structure Overview
+
+- `src/tasks/`: core task implementations (one-time + trigger)
+- `src/ui/`: custom UI tabs (including task scheduler)
+- `src/scheduler/`: Windows task-scheduler helper modules
+- `src/essence/`: essence recognition and requirement matching
+- `src/data/`: map/character/item and language mapping data
+- `assets/`: templates, OCR assets, weapon data CSV
+- `configs/`: task defaults, UI options, scheduler caches
+- `tests/`: unit and functional tests
 
 
 ## 🔧 Troubleshooting
@@ -108,6 +262,18 @@ ok-ef.exe -t 1 -e
 
 * `-t` or `--task`: Automatically run the Nth task. `1` is the first task in the list.
 * `-e` or `--exit`: Exit automatically after the task completes.
+
+### Development debug & tests
+
+```bash
+# Run all scripts under tests/ (PowerShell)
+./run_tests.ps1
+
+# Or run unittest case-by-case
+python -m unittest tests/TestEssenceRecognizer.py
+```
+
+For OCR/template/color-recognition features, prefer debugging with `main_debug.py` and inspect logs/screenshots for faster diagnosis.
 
 ## 💬 Join Us
 
