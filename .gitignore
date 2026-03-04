@@ -1,72 +1,84 @@
+############################
+# 🔐 私密 / 本地文件
+############################
 my_key.txt
-updates/
-working/
-test_ocr/
-update/
-x-anylabeling-asset/project_dir/coco_output
-x-anylabeling-asset/classes.txt
-tesseract
-models
-fonts
-data2
-items_process
-# Byte-compiled / optimized / DLL files
-.idea/
-data_export
-data_import
-__pycache__/
-*.msgpack
-data/
-*$py.class
-configs/
-paddle_model/
-ok/
-*.dat
-ok
 md5.txt
-update.bat
-click_screenshots/
-test_scripts/
-screenshots/
 thread_dumps.txt
-# C extensions
-*.so
-*.bat
 
-# Distribution / packaging
-.Python
-test/
-logs/
+############################
+# 🗂 运行生成数据（仅忽略根目录）
+############################
+/data/
+/data2/
+/data_export/
+/data_import/
+/logs/
+/working/
+/working_images/
+/click_screenshots/
+/screenshots/
+/items_process/
+/configs/
+
+############################
+# 🧠 OCR / 标注输出
+############################
+x-anylabeling-asset/project_dir/coco_output
+*.msgpack
+
+############################
+# 🤖 模型文件（如需提交请移除）
+/models/
+/paddle_model/
+/tesseract/
+
+############################
+# ⚙ Python 缓存
+__pycache__/
+*$py.class
+*.pyc
+*.pyo
+
+############################
+# 🏗 构建产物
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
+develop-eggs/
 .eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
 *.egg-info/
-.installed.cfg
 *.egg
 MANIFEST
+
+############################
+# 🧳 虚拟环境
 venv/
 .venv/
 python/
 
-# PyInstaller
-# Usually these files are written by a python script from a template
-# before PyInstaller builds the exe, so as to inject date/other infos into it.
+############################
+# 🧰 IDE
+.idea/
+.vscode/
+
+############################
+# 🖥 PyInstaller
 *.manifest
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+############################
+# 📦 临时 / 测试
+test/
+test_scripts/
+test_ocr/
+downloads/
 autohelper
-working_images/
-.vscode/
-jizhi.png
+
+############################
+# 🪟 Windows
+*.bat
+*.so
+
+############################
+# 🚫 不要忽略源码
+############################
+!src/
+!src/data/
