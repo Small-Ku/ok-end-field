@@ -78,6 +78,7 @@ class DailyTask(BaseEfTask):
         self.name = "日常任务"
         self.description = "一键收菜"
         self.icon = FluentIcon.SYNC
+        self.support_schedule_task = True
         self.can_contact_dict = get_contact_list_with_feature_list()
         buy_sell = dict()
         for area in areas_list:

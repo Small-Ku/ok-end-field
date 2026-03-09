@@ -47,6 +47,7 @@ class DeliveryTask(BaseEfTask):
         self.default_config = {"_enabled": True}
         self.name = "自动送货"
         self.description = "仅武陵7.31w送货,教程视频 BV1LLc7zFEF9"
+        self.support_schedule_task = True
         self.ends = ["常沄", "资源", "彦宁", "齐纶"]
         self.config_description = {
             self.CFG_SCROLL_ENABLE: "启用后在对齐滑索时会自动滚动放大视角\n可能会提高对齐成功率，但也可能导致对齐成功率下降较为明显\n建议启用此项时不要使用非白发或有白帽角色",
