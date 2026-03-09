@@ -24,6 +24,15 @@ from src.image.hsv_config import HSVRange as hR
 from src.tasks.BaseEfTask import BaseEfTask
 
 
+def build_name_patterns(find_name: str):
+    if len(find_name) >= 2:
+        keys = [find_name[i:i + 2] for i in range(len(find_name) - 1)]
+    else:
+        keys = [find_name]
+
+    return [re.compile(k) for k in keys]
+
+
 class LiaisonResult(int, Enum):
     """前往联络站流程的结果枚举。
 
@@ -104,6 +113,9 @@ class DailyTask(BaseEfTask):
                 "尝试仅收培育室": "在好友交流助力时，优先尝试仅收取培育室的助力,但每次至少助力一次舱室",
             }
         )
+        self.contact_name_patterns = {
+            name: build_name_patterns(name) for name in self.can_contact_dict.keys()
+        }
         self.all_name_pattern = [re.compile(i) for i in all_list]
         if self.debug:
             self.default_config.update(
@@ -875,6 +887,7 @@ class DailyTask(BaseEfTask):
         target_feature_name = self.can_contact_dict[target_name]
         search_char_box=self.box_of_screen(795/1920, 248/1080, 1687/1920, 764/1080)
         find_name=""
+        find_name_patterns = []
         for attempt in range(1, 11):
             self.log_info(f"第 {attempt}/10 次尝试打开信任度界面")
             self.press_key('f', after_sleep=2)
@@ -927,6 +940,7 @@ class DailyTask(BaseEfTask):
             find_feature_name = next(iter(result))
 
             find_name = next(k for k, v in self.can_contact_dict.items() if v == find_feature_name)
+            find_name_patterns = self.contact_name_patterns.get(find_name, build_name_patterns(find_name))
             self.log_info("找到联络对象")
             self.click(list(result.values())[0], after_sleep=2)
             if not self.wait_click_ocr(
@@ -947,24 +961,24 @@ class DailyTask(BaseEfTask):
                 self.next_frame()
                 self.sleep(0.2)
             self.next_frame()
-            if not self.wait_ocr(match=find_name,box=self.box.top, time_out=2):
+            if not self.wait_ocr(match=find_name_patterns, box=self.box.top, time_out=2, log=True):
                 self.log_info(f"未找到 {find_name} 的名字,重新打开联络界面")
                 self.ensure_main()
                 continue
             self.next_frame()
-            if chat_box := self.ocr(match=find_name, box=self.box.bottom_right):
+            if chat_box := self.ocr(match=find_name_patterns, box=self.box.bottom_right):
                 self.log_info("发现干员，点击进行交互")
                 self.send_key_down("alt")
                 self.sleep(0.5)
                 self.click_box(chat_box, after_sleep=1)
                 self.next_frame()
-                self.wait_click_ocr(match=find_name, box=self.box.bottom_right, time_out=1)
+                self.wait_click_ocr(match=find_name_patterns, box=self.box.bottom_right, time_out=1)
                 self.send_key_up("alt")
                 self.log_info("干员联络完成")
                 return True
             self.log_info(f"找到 {find_name} 的名字，开始界面对齐")
             find_flag = self.align_ocr_or_find_target_to_center(
-                ocr_match_or_feature_name_list=find_name,
+                ocr_match_or_feature_name_list=find_name_patterns,
                 raise_if_fail=False,
                 only_x=True,
                 max_time=14,
@@ -985,7 +999,7 @@ class DailyTask(BaseEfTask):
 
         while chat_box is None:
             chat_box = self.wait_ocr(
-                match=find_name,
+                match=find_name_patterns,
                 box=self.box.bottom_right,
                 time_out=1,
             )
@@ -995,7 +1009,7 @@ class DailyTask(BaseEfTask):
                 self.sleep(0.5)
                 self.click_box(chat_box,after_sleep=1)
                 self.next_frame()
-                self.wait_click_ocr(match=find_name, box=self.box.bottom_right, time_out=1)
+                self.wait_click_ocr(match=find_name_patterns, box=self.box.bottom_right, time_out=1)
                 self.send_key_up("alt")
                 self.log_info("干员联络完成")
                 return True
