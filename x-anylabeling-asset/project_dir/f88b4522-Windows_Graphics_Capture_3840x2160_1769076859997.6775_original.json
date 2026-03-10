@@ -3,7 +3,7 @@
   "flags": {},
   "shapes": [
     {
-      "label": "skill_e",
+      "label": "default_link_skill",
       "shape_type": "rectangle",
       "flags": {},
       "points": [
