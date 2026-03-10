@@ -1,20 +1,28 @@
 from src.tasks.BaseEfTask import BaseEfTask
-from src.tasks.AutoCombatTask import (
-    has_rectangles,
-    isolate_white_text_to_black,
-    yellow_skill_color,
-    white_skill_color,
-)
+from src.tasks.AutoCombatTask import AutoCombatTask
 from src.data.FeatureList import FeatureList as fL
 import re
-import numpy as np
+import time
 
 class Test(BaseEfTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.default_config = {'_enabled': True}
         self.name = "测试"
+        self.description = "完整战斗测试"
+        self.default_config.update({
+            "技能释放": "123",
+            "启动技能点数": 2,
+            "后台结束战斗通知": True,
+            "无数字操作间隔": 6
+        })
         self.lv_regex = re.compile(r"(?i)lv|\d{2}")
+        self.last_op_time = 0
+        self.last_skill_time = 0
+        self.exit_check_count = 0  # 退出验证计数器，需要連续捐捕 2 次
+        self._last_exit_fail_skill_count = None
+        self.last_no_number_action_time = 0
 
     def test_times_ocr(self):
         box1 = self.box_of_screen(1749 / 1920, 107 / 1080, 1789 / 1920, 134 / 1080)
@@ -42,107 +50,87 @@ class Test(BaseEfTask):
         self.wait_click_ocr(match=[re.compile(i) for i in ["会客", "培养", "制造"]], time_out=5, after_sleep=2,log=True)
 
     def run(self):
-        self.log_info("开始监控战斗状态")
-
-        was_in_combat = False
+        raw_skill_config = self.config.get("技能释放", "123")
+        start_trigger_count = self.config.get("启动技能点数", 2)
+        skill_sequence = self._parse_skill_sequence(raw_skill_config)
 
         while True:
-            is_in_combat = self.in_combat(required_yellow=1)
+            if not self.in_combat(required_yellow=1):
+                self.sleep(0.1)
+                continue
 
-            if is_in_combat and not was_in_combat:
-                if self.debug:
-                    self.screenshot('test_enter_combat')
-                self.log_info("战斗进入状态", notify=True)
+            self.log_info("进入战斗!", notify=True)
 
-            if not is_in_combat and was_in_combat:
-                if self.debug:
-                    self.screenshot('test_out_of_combat')
-                self.log_info("战斗退出状态", notify=True)
+            if self.debug:
+                self.screenshot('enter_combat')
 
-            was_in_combat = is_in_combat
-            self.sleep(0.05)
+            self.click(key='middle')
 
-    def ocr_lv(self):
-        lv = self.ocr(0.02, 0.89, 0.23, 0.93, match=self.lv_regex, name='lv_text')
-        if len(lv) > 0:
-            return True
-        lv = self.ocr(
-            0.02,
-            0.89,
-            0.23,
-            0.93,
-            frame_processor=isolate_white_text_to_black,
-            match=self.lv_regex,
-            name='lv_text'
-        )
-        return len(lv) > 0
+            while True:
+                skill_count = self.get_skill_bar_count()
 
-    def in_combat(self, required_yellow=0):
-        return self.get_skill_bar_count() >= required_yellow and self.in_team() and not self.ocr_lv()
+                # 使用新的退出检查方法
+                if self.is_combat_ended():
+                    if self.debug:
+                        self.screenshot('out_of_combat')
+                    self.log_info("退出战斗!", notify=True)
+                    self.log_info("退出战斗主循环")
+                    break
 
-    def in_team(self):
-        return self.find_one('skill_1') and self.find_one('skill_2') and self.find_one('skill_3') and self.find_one(
-            'skill_4')
+                self.handle_no_damage_number_actions()
 
-    def get_skill_bar_count(self):
-        skill_area_box = self.box_of_screen_scaled(3840, 2160, 1586, 1940, 2266, 1983)
-        skill_area = skill_area_box.crop_frame(self.frame)
-        if not has_rectangles(skill_area):
-            return -1
+                if self.use_e_skill() or self.use_ult():
+                    continue
 
-        count = 0
-        y_start, y_end = 1958, 1970
+                if skill_count >= start_trigger_count:
+                    self.log_info(f"Triggering sequence at {skill_count} points")
 
-        bars = [
-            (1604, 1796),
-            (1824, 2013),
-            (2043, 2231)
-        ]
+                    for skill_key in skill_sequence:
+                        if not self.in_combat():
+                            break
 
-        for x1, x2 in bars:
-            if self.check_is_pure_color_in_4k(x1, y_start, x2, y_end, yellow_skill_color):
-                count += 1
-            else:
-                break
+                        while True:
+                            current_points = self.get_skill_bar_count()
+                            time_since_last_skill = time.time() - self.last_skill_time
 
-        if count == 0:
-            has_white_left = self.check_is_pure_color_in_4k(1604, y_start, 1614, y_end, white_skill_color,
-                                                            threshold=0.1)
-            if not has_white_left:
-                count = -1
-        return count
+                            if current_points >= 1 and time_since_last_skill >= 1.0:
+                                break
 
-    def check_is_pure_color_in_4k(self, x1, y1, x2, y2, color_range=None, threshold=0.9):
-        skill_area_box = self.box_of_screen_scaled(3840, 2160, x1, y1, x2, y2)
-        bar = skill_area_box.crop_frame(self.frame)
+                            if self.use_e_skill() or self.use_ult():
+                                continue
 
-        if bar.size == 0:
-            return False
+                            if current_points < 0 and (self.ocr_lv() or not self.in_team()):
+                                break
 
-        height, width, _ = bar.shape
-        consecutive_matches = 0
+                            self.handle_no_damage_number_actions()
+                            self.perform_attack_weave()
+                            self.sleep(0.05)
 
-        for i in range(height):
-            row_pixels = bar[i]
-            unique_colors, counts = np.unique(row_pixels, axis=0, return_counts=True)
-            most_frequent_index = np.argmax(counts)
-            dominant_count = counts[most_frequent_index]
-            dominant_color = unique_colors[most_frequent_index]
+                        if not self.in_combat():
+                            break
 
-            is_valid_row = (dominant_count / width) >= threshold
+                        self.send_key(skill_key)
+                        self.last_skill_time = time.time()
+                        self.last_op_time = time.time()
+                        self.log_info(f"Used skill {skill_key}")
 
-            if is_valid_row and color_range:
-                b, g, r = dominant_color
-                if not (color_range['r'][0] <= r <= color_range['r'][1] and
-                        color_range['g'][0] <= g <= color_range['g'][1] and
-                        color_range['b'][0] <= b <= color_range['b'][1]):
-                    is_valid_row = False
+                    self.log_info("Sequence finished, returning to charge mode")
+                else:
+                    self.perform_attack_weave()
 
-            if is_valid_row:
-                consecutive_matches += 1
-                if consecutive_matches >= 2:
-                    return True
-            else:
-                consecutive_matches = 0
+                self.sleep(0.05)
 
-        return False
+    perform_attack_weave = AutoCombatTask.perform_attack_weave
+    _parse_skill_sequence = AutoCombatTask._parse_skill_sequence
+    use_ult = AutoCombatTask.use_ult
+    wait_in_combat = AutoCombatTask.wait_in_combat
+    is_combat_ended = AutoCombatTask.is_combat_ended
+    _check_single_exit_condition = AutoCombatTask._check_single_exit_condition
+    _check_center_area_has_number = AutoCombatTask._check_center_area_has_number
+    handle_no_damage_number_actions = AutoCombatTask.handle_no_damage_number_actions
+    use_e_skill = AutoCombatTask.use_e_skill
+    ocr_lv = AutoCombatTask.ocr_lv
+    in_combat = AutoCombatTask.in_combat
+    in_team = AutoCombatTask.in_team
+    get_skill_bar_count = AutoCombatTask.get_skill_bar_count
+    check_is_pure_color_in_4k = AutoCombatTask.check_is_pure_color_in_4k
