@@ -21,6 +21,7 @@ thread_dumps.txt
 /configs/
 /tests/configs
 /tests/logs
+label_class
 ############################
 # 🧠 OCR / 标注输出
 ############################

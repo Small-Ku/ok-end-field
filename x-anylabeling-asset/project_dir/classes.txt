@@ -48,6 +48,11 @@ friend_chat_icon
 gathering_materials_icon
 gilberta_contact
 high_capacity_valley_battery
+higher_order_d96
+higher_order_lattice
+higher_order_quadrant_liquid
+higher_order_reflection_tube
+higher_order_three_photos
 industrial_equipment_icon
 laevatain_contact
 last_rite_contact
