@@ -25,9 +25,11 @@ clue_5_icon
 clue_6_icon
 clue_7_icon
 consumables_icon
+credit_can_buy
 cultivation_materials_icon
 da_pan_contact
 default_link_skill
+discount_95_percent_icon
 e
 ember_contact
 esc
@@ -66,6 +68,7 @@ one_click_claim
 one_task_to_map
 operator_liaison_station
 operator_liaison_station_out_map
+orobertyl
 perlica_contact
 pick_f
 pick_recycle
@@ -99,6 +102,7 @@ ult_2
 ult_3
 ult_4
 visit_icon
+weapon_quota
 wulfgard_contact
 wuling_6_65w
 wuling_7_31w
