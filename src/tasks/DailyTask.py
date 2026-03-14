@@ -1,6 +1,6 @@
 from qfluentwidgets import FluentIcon
 
-from src.data.world_map import areas_list, stages_list
+from src.data.world_map import areas_list, stages_list,stages_dict
 from src.tasks.BaseEfTask import BaseEfTask
 from src.tasks.daily.daily_battle_mixin import DailyBattleMixin
 from src.tasks.daily.daily_liaison_mixin import DailyLiaisonMixin
@@ -35,20 +35,7 @@ class DailyTask(
         self.stages_list = stages_list
         self.default_config.update(buy_sell)
         self.default_config.update({"优先送礼对象": list(self.can_contact_dict.keys())[0]})
-        self.default_config.update({
-            "体力本": "干员经验",
-            "技能释放": "123",
-            "启动技能点数": 2,
-            "后台结束战斗通知": True,
-            "无数字操作间隔": 6,
-            "进入战斗后的初始等待时间": 3,
-        })
-        self.config_description.update({
-            "技能释放": "满技能时, 开始释放技能, 如123, 建议只放3个技能",
-            "启动技能点数": "当技能点达到该数值时，开始执行技能序列, 1-3",
-            "平A间隔": "平A点击间隔(秒), 越小越快, 建议 0.08~0.15",
-            "无数字操作间隔": "战斗中周期触发锁敌+向前闪避的最小间隔(秒，最少6秒)",
-        })
+
         self.default_config.update({
             "送礼任务最多尝试次数": 2,
             "送礼": True,
