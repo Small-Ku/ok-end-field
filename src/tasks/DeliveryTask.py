@@ -55,7 +55,7 @@ class DeliveryTask(ZipLineMixin, MapMixin):
         }
         self.default_config.update(
             {
-                self.CFG_TUTORIAL: "https://www.bilibili.com/video/BV1LLc7zFEF9",
+                self.CFG_TUTORIAL: "https://www.bilibili.com/video/BV1LLc7zFEF9\n游戏内开启全屏模式时请确保游戏内分辨率与你的屏幕分辨率一致",
                 self.CFG_TARGET_TICKET_NUM: "79800",
                 self.CFG_TO_DELIVERY_POINT: "36,14",
                 "常沄": "14,108,64,109,60",
