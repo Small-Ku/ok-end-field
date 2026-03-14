@@ -3,11 +3,12 @@ import re
 import time
 
 from src.interaction.Mouse import active_and_send_mouse_delta
+from src.tasks.BaseEfTask import BaseEfTask
 
 TOLERANCE = 50
 
 
-class NavigationMixin:
+class NavigationMixin(BaseEfTask):
     def start_tracking_and_align_target(self, target_feature_in_map, target_feature_out_map):
         """在地图中开启追踪并在地图外完成朝向对齐。"""
         result = self.find_one(
@@ -21,14 +22,8 @@ class NavigationMixin:
         self.log_info(f"找到{target_feature_in_map}图标，点击进入")
         self.click(result, after_sleep=2)
 
-        if result := self.wait_ocr(
-                match=re.compile("追踪"), box=self.box.bottom_right, time_out=5
-        ):
-            if (
-                    "追踪" in result[0].name
-                    and "取" not in result[0].name
-                    and "消" not in result[0].name
-            ):
+        if result := self.wait_ocr(match=re.compile("追踪"), box=self.box.bottom_right, time_out=5):
+            if "追踪" in result[0].name and "取" not in result[0].name and "消" not in result[0].name:
                 self.log_info("点击追踪按钮")
                 self.click(result, after_sleep=2)
 
@@ -48,7 +43,7 @@ class NavigationMixin:
             self,
             target_ocr_pattern,
             nav_feature_name,
-            timeout: int = 60,
+            time_out: int = 60,
             pre_loop_callback=None,
             found_special_callback=None,
     ):
@@ -62,7 +57,7 @@ class NavigationMixin:
                 box=self.box.bottom_right,
                 time_out=1,
         ):
-            if time.time() - start_time > timeout:
+            if time.time() - start_time > time_out:
                 self.log_info("导航超时")
                 return False
 
@@ -328,7 +323,7 @@ class NavigationMixin:
                 # cy = int(self.height * 0.5)
                 for _ in range(6):
                     # self.scroll(cx, cy, 8)
-                    self.scroll(0.5,0.5,80)
+                    self.scroll(0.5, 0.5, 80)
                     self.sleep(1)
         if raise_if_fail:
             raise Exception("对中失败")

@@ -420,7 +420,7 @@ class DeliveryTask(ZipLineMixin, MapMixin, NavigationMixin, BaseEfTask):
             if only_zip_line:
                 return True
             if self.wait_ocr(match="登上滑索架", box=self.box.bottom_right, time_out=2, log=True):
-                self.send_key("v", after_sleep=1)
+                self.press_key("v", after_sleep=1)
                 self.press_key('f', after_sleep=2)
                 self.align_ocr_or_find_target_to_center(
                     ocr_match_or_feature_name_list=secondary_objective_direction_dot,
@@ -474,7 +474,7 @@ class DeliveryTask(ZipLineMixin, MapMixin, NavigationMixin, BaseEfTask):
             self.click(key="right", after_sleep=2)
         for i in range(40):
             self.sleep(2)
-            self.send_key("v", after_sleep=1)
+            self.press_key("v", after_sleep=1)
             self.align_ocr_or_find_target_to_center(
                 ocr_match_or_feature_name_list=secondary_objective_direction_dot,
                 threshold=0.8,

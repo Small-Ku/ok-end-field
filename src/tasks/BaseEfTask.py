@@ -421,7 +421,7 @@ class BaseEfTask(BaseTask):
             area: 区域名称（如'地区建设'、'仓储'等）
             model: 模块名称（如'仓储节点'、'据点管理'等）
         """
-        self.send_key("y", after_sleep=2)
+        self.press_key("y", after_sleep=2)
         if not self.wait_click_ocr(
                 match="更换", box=self.box.left, time_out=2, after_sleep=2
         ):
