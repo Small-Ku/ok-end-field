@@ -63,6 +63,7 @@ config = {
     "windows": {  # Windows游戏请填写此设置
         "exe": ["Endfield.exe"],
         # 'hwnd_class': 'UnrealWindow', #增加重名检查准确度
+        # 自定义交互必须传类对象；传字符串会在 isinstance(..., interaction) 时报 TypeError
         "interaction": EfInteraction,
         # Genshin:某些操作可以后台, 部分游戏支持 PostMessage:可后台点击, 极少游戏支持 ForegroundPostMessage:前台使用PostMessage Pynput/PyDirect:仅支持前台使用
         "capture_method": ["WGC", "BitBlt_RenderFull"],
@@ -102,7 +103,7 @@ config = {
     "yolo": {"model_path": "assets/models/yolo/best.onnx"},  # YOLO 模型路径（相对项目根目录或绝对路径）
     "gui_title": "ok-ef",  # 窗口名
     "template_matching": {  # 可选, 如使用OpenCV的模板匹配
-        "coco_feature_json": os.path.join("assets", "coco_detection.json"),
+        "coco_feature_json": os.path.join("assets", "coco_annotations.json"),
         # coco格式标记, 需要png图片, 在debug模式运行后, 会对进行切图仅保留被标记部分以减少图片大小
         "default_horizontal_variance": 0.002,  # 默认x偏移, 查找不传box的时候, 会根据coco坐标, match偏移box内的
         "default_vertical_variance": 0.002,  # 默认y偏移
