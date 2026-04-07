@@ -49,6 +49,7 @@ ensure_main_once_action_sleep_option = ConfigOption(
     "Ensure Main Once Action Sleep", {"SingleActionWithDelay": 1.5}, description="Ensure Main Once Action Sleep"
 )
 config = {
+    "custom_tasks": True,
     "debug": False,  # Optional, default: False
     "use_gui": True,  # 目前只支持True
     "config_folder": "configs",  # 最好不要修改
